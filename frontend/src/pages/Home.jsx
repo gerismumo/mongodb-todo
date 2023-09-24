@@ -1,3 +1,4 @@
+import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 
 
@@ -10,26 +11,45 @@ function Home() {
     const[newPosition, setNewPosition] = useState('');
     const[EditName, setEditName] = useState('');
     const[EditPosition, setEditPosition] = useState('');
+    const[SelectedId, setSelectedId] = useState('');
 
     //selecte uses list
     useEffect(() => {
-        fetch('http://localhost:5000/todos')
-        .then(response => response.json())
-        .then(data => setUsersList(data))
-        .catch((err) => console.log(err));
+        fetchUsers();
     },[]);
 
-    // const fetchUsers = async() => {
-    //     try {
-    //         const respponse = await axios.get('')
-    //     }  catch (error) {
-    //         console.log(error);
-    //     }
-    // }
+    const fetchUsers = async() => {
+        try {
+            const response = await axios.get('http://localhost:5000/todos');
+            setUsersList(response.data);
+        }  catch (error) {
+            console.log(error);
+        }
+    }
 
     const handleSearchUser = (e) => {
-        setSearchUser(e.target.value);
+        const searchValue = e.target.value.toLowerCase();
+
+        if(searchValue === '') {
+            fetchUsers();
+            setSearchUser('');
+        } else {
+            const filterUsers = UsersList.filter(user => {
+                return user.name.toLowerCase().includes(searchValue) || user.position.toLowerCase().includes(searchValue);
+            });
+            setUsersList(filterUsers);
+            setSearchUser(searchValue);
+
+            if (filterUsers.length === 0) {
+                fetchUsers();
+            }
+    
+            setSearchUser(searchValue); 
+        }
+
+        
     }
+
 
     const displayAddForm = () => {
         setShowAddForm(prevState => !prevState);
@@ -57,7 +77,8 @@ function Home() {
                 throw new Error('Couldn\'t add user');
             } else {
                 
-                setUsersList([...UsersList, userData]);
+                // setUsersList([...UsersList, userData]);
+                await fetchUsers();
                 setNewName('');
                 setNewPosition('');
                 setShowAddForm(false);
@@ -85,14 +106,7 @@ function Home() {
             if(!response.ok) {
                 throw new Error('Error in add User');
             } else {
-                // const updateUsersDetails = UsersList.map(user => {
-                //     if(user.id === userId) {
-                //         return {...user, ...updatedUser}
-                //     }
-                //     return user;
-                // });
-                // setUsersList(updateUsersDetails)
-                window.location.reload();
+                await fetchUsers();
                 setShowEditForm(false);
             }
 
@@ -109,8 +123,7 @@ function Home() {
             if (!response.ok) {
                 throw new Error('Error deleting user');
             } else {
-                const updatedUsersList = UsersList.filter(user => user.id !== userId);
-                setUsersList(updatedUsersList);
+                await fetchUsers();
             }
         } catch (error) {
             console.log(error);
@@ -188,14 +201,15 @@ function Home() {
                                         <button
                                             className='edit-user'
                                             onClick={() => {
-                                                displayEditForm();
+                                                displayEditForm(user._id);
                                                 setEditName(user.name)
                                                 setEditPosition(user.position);
+                                                setSelectedId(user._id);
                                             }}
                                         >
                                             {ShowEditForm ? 'Cancel' : 'Edit'}
                                         </button>
-                                        {ShowEditForm && (
+                                        {ShowEditForm && SelectedId === user._id && (
                                             <div className='edit-form'>
                                                 <form onSubmit={() => handleEditUser(user._id)}>
                                                     <input
