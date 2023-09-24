@@ -21,7 +21,7 @@ const todoController = {
     selectUser: async (req, res) => {
         try{
             const users = await todoModel.find();
-            re.json(users);
+            res.json(users);
         } catch(error) {
             res.status(400).json({message : error.message});
         }
@@ -39,11 +39,11 @@ const todoController = {
     },
 
     //add user
-    addUser: async (req, res) => {
+    editUser: async (req, res) => {
         try {
             const {id} = req.params;
             const {name, position} = req.body;
-            const updatedUser = await todoModel.findByIdAndUpdate(id, {name: name, position: position});
+            const updatedUser = await todoModel.findByIdAndUpdate(id, {name: name, position: position}, {new: true});
             res.json(updatedUser);
         } catch (error) {
             res.status(400).json({message : error.message});

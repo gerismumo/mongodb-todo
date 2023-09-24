@@ -19,6 +19,14 @@ function Home() {
         .catch((err) => console.log(err));
     },[]);
 
+    // const fetchUsers = async() => {
+    //     try {
+    //         const respponse = await axios.get('')
+    //     }  catch (error) {
+    //         console.log(error);
+    //     }
+    // }
+
     const handleSearchUser = (e) => {
         setSearchUser(e.target.value);
     }
@@ -48,18 +56,19 @@ function Home() {
             if(!response.ok) {
                 throw new Error('Couldn\'t add user');
             } else {
-                const userList = [...UsersList, userData];
-                setUsersList(userList);
+                
+                setUsersList([...UsersList, userData]);
                 setNewName('');
                 setNewPosition('');
+                setShowAddForm(false);
             }
         } catch (error) {
             console.log(error);
         }
     }
 
-    const handleEditUser = async(e, userId) => {
-        e.preventDefault();
+    const handleEditUser = async( userId) => {
+        // e.preventDefault();
         const updatedUser = {
             name: EditName,
             position: EditPosition
@@ -76,13 +85,14 @@ function Home() {
             if(!response.ok) {
                 throw new Error('Error in add User');
             } else {
-                const updateUsersDetails = UsersList.map(user => {
-                    if(user.id === userId) {
-                        return {...user, ...updatedUser}
-                    }
-                    return user;
-                });
-                setUsersList(updateUsersDetails)
+                // const updateUsersDetails = UsersList.map(user => {
+                //     if(user.id === userId) {
+                //         return {...user, ...updatedUser}
+                //     }
+                //     return user;
+                // });
+                // setUsersList(updateUsersDetails)
+                window.location.reload();
                 setShowEditForm(false);
             }
 
@@ -162,39 +172,39 @@ function Home() {
                         </tr>
                     </thead>
                     <tbody>
-                        {
-                            UsersList.length === 0 ? (
-                                <tr colSpan="6">No Data</tr>
-                            ) : (
-                                UsersList.map(user =>(
-                                    <tr key={user._id}>
-                                        <td>{user._id}</td>
-                                        <td>{user.name}</td>
-                                        <td>{user.position}</td>
-                                        <td>{user.createdAt}</td>
-                                        <td>
-                                        <button className='edit-user' 
+                        {Array.isArray(UsersList) && UsersList.length === 0 ? (
+                            <tr>
+                                <td colSpan="6">No Data</td>
+                            </tr>
+                        ) : (
+                            Array.isArray(UsersList) &&
+                                UsersList.map(user => (
+                                <tr key={user._id}>
+                                    <td>{user._id}</td>
+                                    <td>{user.name}</td>
+                                    <td>{user.position}</td>
+                                    <td>{user.createdAt}</td>
+                                    <td>
+                                        <button
+                                            className='edit-user'
                                             onClick={() => {
                                                 displayEditForm();
                                                 setEditName(user.name)
                                                 setEditPosition(user.position);
-                                            }
-                                            }
-
+                                            }}
                                         >
-                                            {ShowEditForm ? 'Cancel':'Edit'}
+                                            {ShowEditForm ? 'Cancel' : 'Edit'}
                                         </button>
-                                        {
-                                            ShowEditForm && (
-                                                <div className='edit-form'>
-                                                    <form onSubmit={handleEditUser}>
-                                                    <input 
-                                                        type="text" 
+                                        {ShowEditForm && (
+                                            <div className='edit-form'>
+                                                <form onSubmit={() => handleEditUser(user._id)}>
+                                                    <input
+                                                        type="text"
                                                         placeholder='User name'
                                                         value={EditName}
                                                         onChange={(e) => setEditName(e.target.value)}
                                                     />
-                                                    <input 
+                                                    <input
                                                         type='text'
                                                         placeholder='User position'
                                                         value={EditPosition}
@@ -202,17 +212,17 @@ function Home() {
                                                     />
                                                     <button type='submit'>Update</button>
                                                 </form>
-                                                </div>
-                                            )
-                                        }
-                                        </td>
-                                        <td><button className='delete-user' onClick={handleDeleteUser}>Delete</button></td>
-                                    </tr>
-                                ))
-                                
-                            )
-                        }    
+                                            </div>
+                                        )}
+                                    </td>
+                                    <td>
+                                        <button className='delete-user' onClick={() => handleDeleteUser(user._id)}>Delete</button>
+                                    </td>
+                                </tr>
+                            ))
+                        )}
                     </tbody>
+
                 </table>
             </div>
         </div>
