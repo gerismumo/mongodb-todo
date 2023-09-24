@@ -8,7 +8,7 @@ const todoRoutes = require('./routes/todoRoutes');
 app.use(cors());
 app.use(express.json());
 
-app.use('/api/Todos', todoRoutes);
+app.use('/todos', todoRoutes);
 
 const PORT = process.env.PORT;
 
